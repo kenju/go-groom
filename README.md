@@ -2,13 +2,19 @@
 
 go-groom run grooming commands against multiple repositories concurrently.
 
+# Install
+
+```
+$ go get github.com/kenju/go-groom
+```
+
 # Usage
 
 ```
-$ groom
+$ go-groom
 ```
 
-Run the following commands to the all repository under `$GOPATH/src`.
+Will run the following commands to the all repository under `$GOPATH/src`.
 
 TODO: get command from STDIN and run it.
 
