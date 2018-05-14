@@ -28,7 +28,14 @@ test:
 
 ## Lint
 lint:
-	echo "Not implemented yet"
+	go vet $$(go list)
+	for pkg in $$(go list); do \
+		golint -set_exit_status $$pkg || exit $$?; \
+	done
+
+## Format source codes
+fmt:
+	goimports -w main.go
 
 ## Build binaries
 build:
