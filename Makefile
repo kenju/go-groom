@@ -28,7 +28,11 @@ lint:
 
 ## Build binaries
 build:
-	echo "Not implemented yet"
+	go build -ldflags "$(LDFLAGS)"
+
+## Build binaries and run
+run: build
+	./go-groom
 
 ## Show help
 help:
