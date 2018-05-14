@@ -43,13 +43,18 @@ func main() {
           if err != nil {
             fmt.Printf("error while changeing directory to %s\n", repo)
           }
-          // run command
+          // `git checkout master`
           out, err := exec.Command("git", "checkout", "master").Output()
           if err != nil {
-            fmt.Printf("error while executing command at %s\n", repo)
+            fmt.Printf("error while `git checkout master` at %s: %+v\n", repo, err)
           }
           fmt.Println(string(out))
-          // out, err := exec.Command("git", "pull", "--prune")
+          // `git pull --prune`
+          out, err = exec.Command("git", "pull", "--prune").Output()
+          if err != nil {
+            fmt.Printf("error while `git pull --prune` at %s: %+v\n", repo, err)
+          }
+          fmt.Println(string(out))
         } else {
           fmt.Printf("%+v is not a dir. skipping.\n", fi.Name())
         }
