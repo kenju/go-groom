@@ -8,11 +8,8 @@ import (
 )
 
 func main() {
-  fmt.Println("Hello, world!")
-
-  // TODO: replace with $GO_PATH
-  dir := "/Users/kenjuwagatsuma/.ghq/src/*"
-
+  // ex. $GOPATH/src
+  dir := filepath.Join(os.Getenv("GOPATH"), "src", "*")
   matches, err := filepath.Glob(dir)
   if err != nil {
     fmt.Printf("error file globbing: %+v\n", err)
@@ -21,14 +18,14 @@ func main() {
   // TODO: change this O(N^3) for loop with goroutine
   // ex. $GOPATH/src/github.com/
   for _, host := range matches {
-    users, err := filepath.Glob(host+"/*")
+    users, err := filepath.Glob(filepath.Join(host, "*"))
     if err != nil {
       fmt.Printf("error file globbing: %+v\n", err)
     }
 
     // ex. $GOPATH/src/github.com/kenju
     for _, user := range users {
-      repos, err := filepath.Glob(user+"/*")
+      repos, err := filepath.Glob(filepath.Join(user, "*"))
       if err != nil {
         fmt.Printf("error file globbing: %+v\n", err)
       }

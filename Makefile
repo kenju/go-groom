@@ -4,6 +4,10 @@ REVISION := $(shell git rev-parse --short HEAD)
 LDFLAGS := -X 'main.version=$(VERSION)' \
 	-X 'main.revision=$(REVISION)'
 
+## Build binaries and run
+run: build
+	./go-groom
+
 ## Setup
 setup:
 	go get github.com/golang/lint/golint
@@ -29,10 +33,6 @@ lint:
 ## Build binaries
 build:
 	go build -ldflags "$(LDFLAGS)"
-
-## Build binaries and run
-run: build
-	./go-groom
 
 ## Show help
 help:
