@@ -25,6 +25,8 @@ $ go-groom -script script.sh
 
 ## [optional] `-host (-h)`, `-organization (-o)`, `-repo (-r)`
 
+WIP
+
 ```sh
 $ go-groom -script script.sh -host github.com
 $ go-groom -script script.sh -organization github.com/golang
