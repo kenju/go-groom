@@ -23,7 +23,7 @@ update:
 	echo "Not implemented yet"
 
 ## Run tests
-test:
+test: setup
 	echo "Not implemented yet"
 
 ## Lint
