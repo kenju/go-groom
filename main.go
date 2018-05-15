@@ -9,14 +9,17 @@ import (
 	"flag"
 	"log"
 	"runtime"
+	"strings"
 )
 
 func main() {
 	// TODO: filter target host/org/user for running command
 	// read flag options
-	var scriptPath string
+	var scriptPath, target string
 	flag.StringVar(&scriptPath, "script", "script.sh", "script file to execute")
 	flag.StringVar(&scriptPath, "s", "script.sh", "script file to execute")
+	flag.StringVar(&target, "target", "", "target URL to execute")
+	flag.StringVar(&target, "t", "", "target URL to execute")
 	flag.Parse()
 
 	// get abstract script path
@@ -25,27 +28,58 @@ func main() {
 		fmt.Printf("error while getting absolute path for %s: %+v\n", path, err)
 	}
 
-	// core
-	recursivelyRunGroomCommand(path)
+	split := strings.Split(target, "/")
+	var tu targetURL
+	if len(split) == 1 {
+		tu = targetURL{split[0], "", ""}
+	} else if len(split) == 2 {
+		tu = targetURL{split[0], split[1], ""}
+	} else if len(split) == 3 {
+		tu = targetURL{split[0], split[1], split[2]}
+	}
+	log.Printf("targetURL: %#v\n", tu)
+	recursivelyRunGroomCommand(path, tu)
 
 	logDebug()
+}
+
+type targetURL struct {
+	host string
+	user string
+	repository string
 }
 
 func logDebug() {
 	log.Printf("NumGoroutine: %d\n", runtime.NumGoroutine())
 }
 
-func recursivelyRunGroomCommand(scriptPath string) {
+func recursivelyRunGroomCommand(scriptPath string, target targetURL) {
 	dir := filepath.Join(os.Getenv("GOPATH"), "src")
-	matches := flattenWalk(dir) // ex. $GOPATH/src
+
+	var hosts []string
+	if len(target.host) > 0 {
+		hosts = []string{filepath.Join(dir, target.host)}
+	} else {
+		hosts = flattenWalk(dir)
+	}
 
 	waitgroup := &sync.WaitGroup{}
 
-	for _, host := range matches { // ex. $GOPATH/src/github.com/
-		users := flattenWalk(host)
+	for _, host := range hosts { // ex. $GOPATH/src/github.com/
+		var users []string
+		if len(target.user) > 0 {
+			users = []string{filepath.Join(host, target.user)}
+		} else {
+			users = flattenWalk(host)
+		}
 
 		for _, user := range users { // ex. $GOPATH/src/github.com/kenju
-			repos := flattenWalk(user)
+			var repos []string
+			if len(target.repository) > 0 {
+				repos = []string{filepath.Join(user, target.repository)}
+			} else {
+				repos = flattenWalk(user)
+			}
 
 			for _, repo := range repos { // ex. $GOPATH/src/github.com/kenju/go-groom
 				fi, err := os.Stat(repo)
