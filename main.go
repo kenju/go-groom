@@ -1,15 +1,15 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sync"
-	"flag"
-	"log"
 	"runtime"
 	"strings"
+	"sync"
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 	flag.Parse()
 
 	// get abstract script path
-	path, err := filepath.Abs(scriptPath);
+	path, err := filepath.Abs(scriptPath)
 	if err != nil {
 		fmt.Printf("error while getting absolute path for %s: %+v\n", path, err)
 	}
@@ -44,8 +44,8 @@ func main() {
 }
 
 type targetURL struct {
-	host string
-	user string
+	host       string
+	user       string
 	repository string
 }
 
