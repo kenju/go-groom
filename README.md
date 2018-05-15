@@ -1,5 +1,7 @@
 # go-groom
 
+[![CircleCI](https://circleci.com/gh/kenju/go-groom.svg?style=svg)](https://circleci.com/gh/kenju/go-groom)
+
 go-groom run grooming commands against multiple repositories concurrently.
 
 # Install
