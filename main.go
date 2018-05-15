@@ -7,17 +7,17 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 )
 
 func main() {
-	// TODO: filter target host/org/user for running command
 	// read flag options
 	var scriptPath, target string
+	// -script (-s)
 	flag.StringVar(&scriptPath, "script", "script.sh", "script file to execute")
 	flag.StringVar(&scriptPath, "s", "script.sh", "script file to execute")
+	// -target (-t)
 	flag.StringVar(&target, "target", "", "target URL to execute")
 	flag.StringVar(&target, "t", "", "target URL to execute")
 	flag.Parse()
@@ -39,18 +39,12 @@ func main() {
 	}
 	log.Printf("targetURL: %#v\n", tu)
 	recursivelyRunGroomCommand(path, tu)
-
-	logDebug()
 }
 
 type targetURL struct {
 	host       string
 	user       string
 	repository string
-}
-
-func logDebug() {
-	log.Printf("NumGoroutine: %d\n", runtime.NumGoroutine())
 }
 
 func recursivelyRunGroomCommand(scriptPath string, target targetURL) {
