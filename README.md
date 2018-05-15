@@ -24,7 +24,7 @@ git pull --prune
 $ go-groom -script script.sh
 ```
 
-## `-target (-t)`
+### `-target (-t)`
 
 Specify target repository.
 
