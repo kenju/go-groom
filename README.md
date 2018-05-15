@@ -10,16 +10,23 @@ $ go get github.com/kenju/go-groom
 
 # Usage
 
-```
-$ go-groom
-```
+## Options
+### [required] `-script (-s)`
 
-Will run the following commands to the all repository under `$GOPATH/src`.
-
-TODO: get command from STDIN and run it.
+Path any executable script to run in the each repositories.
 
 ```sh
-# update local master branch to the latest
+$ cat script.sh
+#!/usr/bin/env sh
 git checkout master
 git pull --prune
+$ go-groom -script script.sh
+```
+
+## [optional] `-host (-h)`, `-organization (-o)`, `-repo (-r)`
+
+```sh
+$ go-groom -script script.sh -host github.com
+$ go-groom -script script.sh -organization github.com/golang
+$ go-groom -script script.sh -repo github.com/golang/go
 ```

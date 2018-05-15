@@ -6,7 +6,7 @@ LDFLAGS := -X 'main.version=$(VERSION)' \
 
 ## Build binaries and run
 run: build
-	./go-groom
+	./go-groom -script script.sh
 
 ## Setup
 setup:
