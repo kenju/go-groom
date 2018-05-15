@@ -9,8 +9,6 @@ jobs:
     steps:
       - checkout
 
-      - run:
-        command: |
-          make lint
-          make fmt
-          make test
+      - run: make lint
+      - run: make fmt
+      - run: make test
