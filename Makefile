@@ -15,7 +15,10 @@ WARN_STRING  = "[WARNING]"
 
 ## Build binaries and run
 run: build
-	./go-groom -script script.sh -target github.com/kenju
+	./go-groom \
+		-script script.sh \
+		-target github.com/kenju \
+		-debug
 
 ## Setup
 setup:

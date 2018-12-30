@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,6 +11,8 @@ import (
 	"sync"
 	"time"
 )
+
+var debug bool
 
 func main() {
 	// read flag options
@@ -22,6 +23,8 @@ func main() {
 	// -target (-t)
 	flag.StringVar(&target, "target", "", "target URL to execute")
 	flag.StringVar(&target, "t", "", "target URL to execute")
+	// -debug
+	flag.BoolVar(&debug, "debug", false, "enable debug mode")
 	flag.Parse()
 
 	// get abstract script path
@@ -40,7 +43,11 @@ func main() {
 	} else if len(split) == 3 {
 		tu = targetURL{split[0], split[1], split[2]}
 	}
-	log.Printf("targetURL: %#v\n", tu)
+
+	if debug {
+		fmt.Printf("**DEBUG mode = true**\n")
+		fmt.Printf("targetURL: %#v\n", tu)
+	}
 
 	runInAsync(path, tu)
 }
@@ -122,18 +129,26 @@ func buildTargetPaths(target targetURL) []string {
 
 func runInAsync(scriptPath string, target targetURL) {
 	paths := buildTargetPaths(target)
-	fmt.Printf("Total paths count: %d\n", len(paths))
+
+	if debug {
+		fmt.Printf("Total paths count: %d\n", len(paths))
+	}
 
 	// send a signal to cancel goroutines which are internally invoked inside functions
 	done := make(chan interface{})
 	defer close(done)
 
 	// DEBUG: calculate execution time
-	start := time.Now()
+	var start time.Time
+	if debug {
+		start = time.Now()
+	}
 
 	// spin up the number of pipelines to the number of available CPU on the machine
 	numPipelines := runtime.NumCPU()
-	fmt.Printf("Spinning up %d pipeline\n", numPipelines)
+	if debug {
+		fmt.Printf("Spinning up %d pipeline\n", numPipelines)
+	}
 
 	pipelines := make([]<-chan interface{}, numPipelines)
 	targetPathCh := stringArrToCh(done, paths)
@@ -150,7 +165,9 @@ func runInAsync(scriptPath string, target targetURL) {
 	}
 
 	// DEBUG: calculate execution time
-	fmt.Printf("Execution took: %v\n", time.Since(start))
+	if debug {
+		fmt.Printf("Execution took: %v\n", time.Since(start))
+	}
 }
 
 // stage to take values from channels
