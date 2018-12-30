@@ -8,8 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"sync"
-)
+	)
 
 func main() {
 	// read flag options
@@ -77,12 +76,11 @@ func buildRepos(target targetURL, user string) []string {
 	return repos
 }
 
-func recursivelyRunGroomCommand(scriptPath string, target targetURL) {
+func buildTargetPaths(target targetURL) []string {
 	dir := filepath.Join(os.Getenv("GOPATH"), "src")
 	hosts := buildHosts(target, dir)
 
-	wg := &sync.WaitGroup{}
-
+	var paths []string
 	for _, host := range hosts { // ex. $GOPATH/src/github.com/
 		users := buildUsers(target, host)
 
@@ -95,29 +93,67 @@ func recursivelyRunGroomCommand(scriptPath string, target targetURL) {
 					fmt.Printf("error while getting os stat for %+v\n", fi)
 				}
 				if fi.IsDir() {
-					wg.Add(1)
-					// TODO: visualize go script process
-					go func(r, p string, wg *sync.WaitGroup) {
-						defer wg.Done()
-						runGroomCommand(r, p)
-					}(repo, scriptPath, wg)
+					paths = append(paths, repo)
 				}
 			}
 		}
 	}
 
-	wg.Wait()
+	return paths
 }
 
-func runGroomCommand(dir, scriptPath string) {
+func recursivelyRunGroomCommand(scriptPath string, target targetURL) {
+	done := make(chan interface{})
+	defer close(done)
+
+	paths := buildTargetPaths(target)
+
+	fmt.Printf("Total paths count: %d\n", len(paths))
+
+	for result := range runInAsync(done, scriptPath, paths...) {
+		if result.Error != nil {
+			fmt.Printf("error: %v", result.Error)
+			continue
+		}
+		fmt.Printf("out: %s", result.Out)
+	}
+}
+
+type Result struct {
+	Error error
+	Out   string
+}
+
+func runInAsync(done <-chan interface{}, scriptPath string, paths ...string) <-chan Result {
+	results := make(chan Result)
+
+	go func() {
+		defer close(results)
+
+		for _, path := range paths {
+			out, err := runGroomCommand(path, scriptPath)
+			result := Result{Error: err, Out: out}
+
+			select {
+			case <-done:
+				return
+			case results <- result:
+			}
+		}
+	}()
+
+	return results
+}
+
+func runGroomCommand(dir, scriptPath string) (string, error) {
 	cmd := exec.Command(scriptPath)
 	cmd.Dir = dir
 
 	out, err := cmd.Output()
 	if err != nil {
-		fmt.Printf("%s: %s", dir, fmt.Sprint(err))
+		return "", err
 	}
-	fmt.Println(string(out))
+	return string(out), nil
 }
 
 func flattenWalk(path string) []string {
