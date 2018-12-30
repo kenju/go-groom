@@ -76,6 +76,14 @@ func buildRepos(target targetURL, user string) []string {
 	return repos
 }
 
+func flattenWalk(path string) []string {
+	matches, err := filepath.Glob(filepath.Join(path, "*"))
+	if err != nil {
+		fmt.Printf("error file globbing: %+v\n", err)
+	}
+	return matches
+}
+
 func buildTargetPaths(target targetURL) []string {
 	dir := filepath.Join(os.Getenv("GOPATH"), "src")
 	hosts := buildHosts(target, dir)
@@ -131,7 +139,7 @@ func runInAsync(done <-chan interface{}, scriptPath string, paths ...string) <-c
 		defer close(results)
 
 		for _, path := range paths {
-			out, err := runGroomCommand(path, scriptPath)
+			out, err := execCommand(path, scriptPath)
 			result := Result{Error: err, Out: out}
 
 			select {
@@ -145,7 +153,7 @@ func runInAsync(done <-chan interface{}, scriptPath string, paths ...string) <-c
 	return results
 }
 
-func runGroomCommand(dir, scriptPath string) (string, error) {
+func execCommand(dir, scriptPath string) (string, error) {
 	cmd := exec.Command(scriptPath)
 	cmd.Dir = dir
 
@@ -156,10 +164,3 @@ func runGroomCommand(dir, scriptPath string) (string, error) {
 	return string(out), nil
 }
 
-func flattenWalk(path string) []string {
-	matches, err := filepath.Glob(filepath.Join(path, "*"))
-	if err != nil {
-		fmt.Printf("error file globbing: %+v\n", err)
-	}
-	return matches
-}
