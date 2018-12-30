@@ -47,17 +47,21 @@ type targetURL struct {
 	repository string
 }
 
-func recursivelyRunGroomCommand(scriptPath string, target targetURL) {
-	dir := filepath.Join(os.Getenv("GOPATH"), "src")
-
+func buildHosts(target targetURL, dir string) []string {
 	var hosts []string
 	if len(target.host) > 0 {
 		hosts = []string{filepath.Join(dir, target.host)}
 	} else {
 		hosts = flattenWalk(dir)
 	}
+	return hosts
+}
 
-	waitgroup := &sync.WaitGroup{}
+func recursivelyRunGroomCommand(scriptPath string, target targetURL) {
+	dir := filepath.Join(os.Getenv("GOPATH"), "src")
+	hosts := buildHosts(target, dir)
+
+	wg := &sync.WaitGroup{}
 
 	for _, host := range hosts { // ex. $GOPATH/src/github.com/
 		var users []string
@@ -81,18 +85,18 @@ func recursivelyRunGroomCommand(scriptPath string, target targetURL) {
 					fmt.Printf("error while getting os stat for %+v\n", fi)
 				}
 				if fi.IsDir() {
-					waitgroup.Add(1)
+					wg.Add(1)
 					// TODO: visualize go script process
 					go func(r, p string, wg *sync.WaitGroup) {
 						defer wg.Done()
 						runGroomCommand(r, p)
-					}(repo, scriptPath, waitgroup)
+					}(repo, scriptPath, wg)
 				}
 			}
 		}
 	}
 
-	waitgroup.Wait()
+	wg.Wait()
 }
 
 func runGroomCommand(dir, scriptPath string) {

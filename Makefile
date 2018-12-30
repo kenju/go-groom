@@ -6,7 +6,7 @@ LDFLAGS := -X 'main.version=$(VERSION)' \
 
 ## Build binaries and run
 run: build
-	./go-groom -script script.sh -target github.com/kenju/adrb
+	./go-groom -script script.sh -target github.com/kenju/go-groom
 
 ## Setup
 setup:
