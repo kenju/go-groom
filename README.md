@@ -33,11 +33,11 @@ Specify target repository.
 
 ```sh
 # all repository under "github.com/**/*"
-$ go-groom -script script.sh -host github.com
+$ go-groom -script script.sh -target github.com
 
 # all repository under "github.com/golang/*"
-$ go-groom -script script.sh -organization github.com/golang
+$ go-groom -script script.sh -target github.com/golang
 
 # single repository "github.com/golang/go"
-$ go-groom -script script.sh -repo github.com/golang/go
+$ go-groom -script script.sh -target github.com/golang/go
 ```
