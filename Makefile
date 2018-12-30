@@ -4,6 +4,15 @@ REVISION := $(shell git rev-parse --short HEAD)
 LDFLAGS := -X 'main.version=$(VERSION)' \
 	-X 'main.revision=$(REVISION)'
 
+OK_COLOR    = \033[0;32m
+ERROR_COLOR = \033[0;31m
+WARN_COLOR  = \033[0;33m
+NO_COLOR    = \033[m
+
+OK_STRING    = "[OK]"
+ERROR_STRING = "[ERROR]"
+WARN_STRING  = "[WARNING]"
+
 ## Build binaries and run
 run: build
 	./go-groom -script script.sh -target github.com/kenju
@@ -24,7 +33,11 @@ update:
 
 ## Run tests
 test: setup
-	echo "Not implemented yet"
+	if go test ./... -v; then \
+		echo "$(OK_COLOR)$(OK_STRING) go test succeeded$(NO_COLOR)"; \
+	else \
+		echo "$(ERROR_COLOR)$(ERROR_STRING) go test failed$(NO_COLOR)n"; \
+	fi
 
 ## Lint
 lint: setup
