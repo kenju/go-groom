@@ -57,6 +57,26 @@ func buildHosts(target targetURL, dir string) []string {
 	return hosts
 }
 
+func buildUsers(target targetURL, host string) []string {
+	var users []string
+	if len(target.user) > 0 {
+		users = []string{filepath.Join(host, target.user)}
+	} else {
+		users = flattenWalk(host)
+	}
+	return users
+}
+
+func buildRepos(target targetURL, user string) []string {
+	var repos []string
+	if len(target.repository) > 0 {
+		repos = []string{filepath.Join(user, target.repository)}
+	} else {
+		repos = flattenWalk(user)
+	}
+	return repos
+}
+
 func recursivelyRunGroomCommand(scriptPath string, target targetURL) {
 	dir := filepath.Join(os.Getenv("GOPATH"), "src")
 	hosts := buildHosts(target, dir)
@@ -64,20 +84,10 @@ func recursivelyRunGroomCommand(scriptPath string, target targetURL) {
 	wg := &sync.WaitGroup{}
 
 	for _, host := range hosts { // ex. $GOPATH/src/github.com/
-		var users []string
-		if len(target.user) > 0 {
-			users = []string{filepath.Join(host, target.user)}
-		} else {
-			users = flattenWalk(host)
-		}
+		users := buildUsers(target, host)
 
 		for _, user := range users { // ex. $GOPATH/src/github.com/kenju
-			var repos []string
-			if len(target.repository) > 0 {
-				repos = []string{filepath.Join(user, target.repository)}
-			} else {
-				repos = flattenWalk(user)
-			}
+			repos := buildRepos(target, user)
 
 			for _, repo := range repos { // ex. $GOPATH/src/github.com/kenju/go-groom
 				fi, err := os.Stat(repo)
