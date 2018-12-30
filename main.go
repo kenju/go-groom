@@ -7,8 +7,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
-	)
+	"sync"
+	"time"
+)
 
 func main() {
 	// read flag options
@@ -27,6 +30,7 @@ func main() {
 		fmt.Printf("error while getting absolute path for %s: %+v\n", path, err)
 	}
 
+	// build targetURL from flag
 	split := strings.Split(target, "/")
 	var tu targetURL
 	if len(split) == 1 {
@@ -37,13 +41,19 @@ func main() {
 		tu = targetURL{split[0], split[1], split[2]}
 	}
 	log.Printf("targetURL: %#v\n", tu)
-	recursivelyRunGroomCommand(path, tu)
+
+	runInAsync(path, tu)
 }
 
 type targetURL struct {
 	host       string
 	user       string
 	repository string
+}
+
+type execResult struct {
+	Error error
+	Out   string
 }
 
 func buildHosts(target targetURL, dir string) []string {
@@ -110,57 +120,148 @@ func buildTargetPaths(target targetURL) []string {
 	return paths
 }
 
-func recursivelyRunGroomCommand(scriptPath string, target targetURL) {
+func runInAsync(scriptPath string, target targetURL) {
+	paths := buildTargetPaths(target)
+	fmt.Printf("Total paths count: %d\n", len(paths))
+
+	// send a signal to cancel goroutines which are internally invoked inside functions
 	done := make(chan interface{})
 	defer close(done)
 
-	paths := buildTargetPaths(target)
+	// DEBUG: calculate execution time
+	start := time.Now()
 
-	fmt.Printf("Total paths count: %d\n", len(paths))
+	// spin up the number of pipelines to the number of available CPU on the machine
+	numPipelines := runtime.NumCPU()
+	fmt.Printf("Spinning up %d pipeline\n", numPipelines)
 
-	for result := range runInAsync(done, scriptPath, paths...) {
-		if result.Error != nil {
-			fmt.Printf("error: %v", result.Error)
-			continue
-		}
-		fmt.Printf("out: %s", result.Out)
+	pipelines := make([]<-chan interface{}, numPipelines)
+	targetPathCh := stringArrToCh(done, paths)
+	for i := 0; i < numPipelines; i++ {
+		pipelines[i] = commandExecutor(done, targetPathCh, scriptPath)
 	}
+
+	// execute commands concurrently in each pipelines
+	for result := range take(done, fanIn(done, pipelines...), len(paths)) {
+		if result.(execResult).Error != nil {
+			fmt.Printf("Error: %v\n", result.(execResult).Error)
+		}
+		fmt.Println(result.(execResult).Out)
+	}
+
+	// DEBUG: calculate execution time
+	fmt.Printf("Execution took: %v\n", time.Since(start))
 }
 
-type Result struct {
-	Error error
-	Out   string
-}
-
-func runInAsync(done <-chan interface{}, scriptPath string, paths ...string) <-chan Result {
-	results := make(chan Result)
+// stage to take values from channels
+func take(
+	done <-chan interface{},
+	valueCh <-chan interface{},
+	num int,
+) <-chan interface{} {
+	takeCh := make(chan interface{})
 
 	go func() {
-		defer close(results)
+		defer close(takeCh)
 
-		for _, path := range paths {
-			out, err := execCommand(path, scriptPath)
-			result := Result{Error: err, Out: out}
-
+		for i := 0; i < num; i++ {
 			select {
 			case <-done:
 				return
-			case results <- result:
+			case takeCh <- <-valueCh:
 			}
 		}
 	}()
 
-	return results
+	return takeCh
 }
 
-func execCommand(dir, scriptPath string) (string, error) {
+// stage to multiplex multiple channels
+func fanIn(
+	done <-chan interface{},
+	channels ...<-chan interface{},
+) <-chan interface{} {
+	var wg sync.WaitGroup
+	multiplexedCh := make(chan interface{})
+
+	multiplex := func(c <-chan interface{}) {
+		defer wg.Done()
+		for i := range c {
+			select {
+			case <-done:
+				return
+			case multiplexedCh <- i:
+			}
+		}
+	}
+
+	// select from all the channels
+	wg.Add(len(channels))
+	for _, c := range channels {
+		go multiplex(c)
+	}
+
+	go func() {
+		wg.Wait()
+		close(multiplexedCh)
+	}()
+
+	return multiplexedCh
+}
+
+// stage for converting String array to channel
+func stringArrToCh(
+	done <-chan interface{},
+	arr []string,
+) <-chan string {
+	ch := make(chan string)
+
+	go func() {
+		defer close(ch)
+
+		for _, v := range arr {
+			select {
+			case <-done:
+				return
+			case ch <- v:
+			}
+		}
+	}()
+
+	return ch
+}
+
+// stage for executing command at target dir
+func commandExecutor(
+	done <-chan interface{},
+	stringCh <-chan string,
+	scriptPath string,
+) <-chan interface{} {
+	resultCh := make(chan interface{})
+
+	go func() {
+		defer close(resultCh)
+
+		for {
+			select {
+			case <-done:
+				return
+			case resultCh <- execCommand(<-stringCh, scriptPath):
+			}
+		}
+	}()
+
+	return resultCh
+}
+
+// execute command
+func execCommand(dir, scriptPath string) execResult {
 	cmd := exec.Command(scriptPath)
 	cmd.Dir = dir
 
 	out, err := cmd.Output()
 	if err != nil {
-		return "", err
+		return execResult{Error: err, Out: ""}
 	}
-	return string(out), nil
+	return execResult{Error: nil, Out: string(out)}
 }
-
