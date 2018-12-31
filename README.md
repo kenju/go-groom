@@ -6,7 +6,7 @@ go-groom run grooming commands against multiple repositories concurrently.
 
 # Install
 
-```
+```sh
 $ go get -u github.com/kenju/go-groom
 ```
 
