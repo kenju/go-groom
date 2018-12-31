@@ -53,3 +53,7 @@ $ go-groom \
     -target github.com \
     -concurrency 8
 ```
+
+# Milestones
+
+- Support timeout (a.k.a. deadlines) for each execution

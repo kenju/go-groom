@@ -13,13 +13,20 @@ OK_STRING    = "[OK]"
 ERROR_STRING = "[ERROR]"
 WARN_STRING  = "[WARNING]"
 
-## Build binaries and run
-run: build
+## Build binaries and run in debug mode
+run-debug: build
 	./go-groom \
 		-script script.sh \
 		-target github.com/kenju \
 		-concurrency 8 \
 		-debug
+
+## Build binaries and run in production mode
+run: build
+	./go-groom \
+		-script script.sh \
+		-target github.com/kenju \
+		-concurrency 8
 
 ## Setup
 setup:

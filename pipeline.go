@@ -3,6 +3,7 @@ package main
 import (
 	"os/exec"
 	"sync"
+	"fmt"
 )
 
 type execResult struct {
@@ -31,12 +32,12 @@ func runInAsync(scriptPath string, paths []string, logger *Logger) {
 	// execute commands concurrently in each pipelines
 	pipelines := take(done, fanIn(done, executionPipeline...), len(paths))
 	for result := range pipelines {
-		logger.Printf("\t" + result.(execResult).Dir + "\n")
+		fmt.Printf(result.(execResult).Dir + "\n")
 		if result.(execResult).Error != nil {
 			numError++
-			logger.Printf("\t\tError: %v\n", result.(execResult).Error)
+			fmt.Printf("\tError: %v\n", result.(execResult).Error)
 		}
-		logger.Printf("\t\t" + result.(execResult).Out + "\n")
+		fmt.Printf("\t" + result.(execResult).Out + "\n")
 	}
 
 	logger.endTimer()
