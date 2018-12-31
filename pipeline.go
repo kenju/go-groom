@@ -1,17 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"os/exec"
 	"sync"
 )
 
 type execResult struct {
-	Error error
-	Out   string
+	Dir        string
+	ScriptPath string
+	Error      error
+	Out        string
 }
 
-func runInAsync(scriptPath string, paths []string) {
+func runInAsync(scriptPath string, paths []string, logger *Logger) {
 	// send a signal to cancel goroutines which are internally invoked inside functions
 	done := make(chan interface{})
 	defer close(done)
@@ -20,21 +21,26 @@ func runInAsync(scriptPath string, paths []string) {
 
 	// spin up the number of pipelines to the number of available CPU on the machine
 	logger.Printf("Spinning up %d pipeline\n", numConcurrency)
-	pipelines := make([]<-chan interface{}, numConcurrency)
+	executionPipeline := make([]<-chan interface{}, numConcurrency)
 	targetPathCh := stringArrToCh(done, paths)
 	for i := 0; i < numConcurrency; i++ {
-		pipelines[i] = commandExecutor(done, targetPathCh, scriptPath)
+		executionPipeline[i] = commandExecutor(done, targetPathCh, scriptPath)
 	}
 
+	var numError int
 	// execute commands concurrently in each pipelines
-	for result := range take(done, fanIn(done, pipelines...), len(paths)) {
+	pipelines := take(done, fanIn(done, executionPipeline...), len(paths))
+	for result := range pipelines {
+		logger.Printf("\t" + result.(execResult).Dir + "\n")
 		if result.(execResult).Error != nil {
-			fmt.Printf("Error: %v\n", result.(execResult).Error)
+			numError++
+			logger.Printf("\t\tError: %v\n", result.(execResult).Error)
 		}
-		fmt.Println(result.(execResult).Out)
+		logger.Printf("\t\t" + result.(execResult).Out + "\n")
 	}
 
 	logger.endTimer()
+	logger.Printf("%d paths, %d error\n", len(paths), numError)
 }
 
 // stage to take values from channels
@@ -145,7 +151,7 @@ func execCommand(dir, scriptPath string) execResult {
 
 	out, err := cmd.Output()
 	if err != nil {
-		return execResult{Error: err, Out: ""}
+		return execResult{Dir: dir, ScriptPath: scriptPath, Error: err, Out: ""}
 	}
-	return execResult{Error: nil, Out: string(out)}
+	return execResult{Dir: dir, ScriptPath: scriptPath, Error: nil, Out: string(out)}
 }

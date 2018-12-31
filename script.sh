@@ -1,4 +1,4 @@
 #!/usr/bin/env sh 
 
-git rev-parse --show-toplevel
+echo "Sleeping 1 second..."
 sleep 1

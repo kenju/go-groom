@@ -42,6 +42,6 @@ func main() {
 	paths := tu.buildTargetPaths()
 	logger.Printf("Total paths count: %d\n", len(paths))
 
-	runInAsync(scriptPathAbs, paths)
+	runInAsync(scriptPathAbs, paths, logger)
 }
 
