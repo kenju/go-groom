@@ -29,9 +29,9 @@ func main() {
 
 	logger = NewLogger(debug)
 
-	path, err := filepath.Abs(scriptPath)
+	scriptPathAbs, err := filepath.Abs(scriptPath)
 	if err != nil {
-		fmt.Printf("error while getting absolute path for %s: %+v\n", path, err)
+		fmt.Printf("error while getting absolute path for %s: %+v\n", scriptPathAbs, err)
 	}
 
 	tu := NewTargetURL(target)
@@ -42,5 +42,6 @@ func main() {
 	paths := tu.buildTargetPaths()
 	logger.Printf("Total paths count: %d\n", len(paths))
 
-	runInAsync(path, paths)
+	runInAsync(scriptPathAbs, paths)
 }
+
