@@ -5,11 +5,13 @@ import (
 	"time"
 )
 
+// Logger handles logging and tracking with timer
 type Logger struct {
 	isDebug     bool
 	startedTime time.Time
 }
 
+// NewLogger returns a new instance of Logger pointer
 func NewLogger(isDebug bool) (*Logger) {
 	return &Logger{
 		isDebug:     isDebug,
@@ -17,6 +19,7 @@ func NewLogger(isDebug bool) (*Logger) {
 	}
 }
 
+// Printf is a delegation to fmt.Printf with application-specific context
 func (l *Logger) Printf(format string, a ...interface{}) {
 	if l.isDebug {
 		fmt.Printf(format, a...)

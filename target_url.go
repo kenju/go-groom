@@ -13,7 +13,7 @@ type targetURL struct {
 	repository string
 }
 
-func NewTargetURL(target string) *targetURL {
+func newTargetURL(target string) *targetURL {
 	split := strings.Split(target, "/")
 	var tu *targetURL
 	if len(split) == 1 {

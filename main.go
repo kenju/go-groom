@@ -34,7 +34,7 @@ func main() {
 		fmt.Printf("error while getting absolute path for %s: %+v\n", scriptPathAbs, err)
 	}
 
-	tu := NewTargetURL(target)
+	tu := newTargetURL(target)
 
 	logger.Printf("**DEBUG mode = true**\n")
 	logger.Printf("targetURL: %#v\n", *tu)
