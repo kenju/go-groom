@@ -12,12 +12,13 @@ import (
 	"time"
 )
 
-var debug bool
+var logger *Logger
 var numConcurrency int
 
 func main() {
 	// read flag options
 	var scriptPath, target string
+	var debug bool
 	// -script (-s)
 	flag.StringVar(&scriptPath, "script", "script.sh", "script file to execute")
 	flag.StringVar(&scriptPath, "s", "script.sh", "script file to execute")
@@ -30,6 +31,8 @@ func main() {
 	// -debug
 	flag.BoolVar(&debug, "debug", false, "enable debug mode")
 	flag.Parse()
+
+	logger = NewLogger(debug)
 
 	// get abstract script path
 	path, err := filepath.Abs(scriptPath)
@@ -48,10 +51,8 @@ func main() {
 		tu = targetURL{split[0], split[1], split[2]}
 	}
 
-	if debug {
-		fmt.Printf("**DEBUG mode = true**\n")
-		fmt.Printf("targetURL: %#v\n", tu)
-	}
+	logger.Printf("**DEBUG mode = true**\n")
+	logger.Printf("targetURL: %#v\n", tu)
 
 	runInAsync(path, tu)
 }
@@ -134,9 +135,7 @@ func buildTargetPaths(target targetURL) []string {
 func runInAsync(scriptPath string, target targetURL) {
 	paths := buildTargetPaths(target)
 
-	if debug {
-		fmt.Printf("Total paths count: %d\n", len(paths))
-	}
+	logger.Printf("Total paths count: %d\n", len(paths))
 
 	// send a signal to cancel goroutines which are internally invoked inside functions
 	done := make(chan interface{})
@@ -144,14 +143,10 @@ func runInAsync(scriptPath string, target targetURL) {
 
 	// DEBUG: calculate execution time
 	var start time.Time
-	if debug {
-		start = time.Now()
-	}
+	start = time.Now()
 
 	// spin up the number of pipelines to the number of available CPU on the machine
-	if debug {
-		fmt.Printf("Spinning up %d pipeline\n", numConcurrency)
-	}
+	logger.Printf("Spinning up %d pipeline\n", numConcurrency)
 
 	pipelines := make([]<-chan interface{}, numConcurrency)
 	targetPathCh := stringArrToCh(done, paths)
@@ -168,9 +163,7 @@ func runInAsync(scriptPath string, target targetURL) {
 	}
 
 	// DEBUG: calculate execution time
-	if debug {
-		fmt.Printf("Execution took: %v\n", time.Since(start))
-	}
+	logger.Printf("Execution took: %v\n", time.Since(start))
 }
 
 // stage to take values from channels
