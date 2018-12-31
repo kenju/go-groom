@@ -42,7 +42,10 @@ func main() {
 	logger.Printf("**DEBUG mode = true**\n")
 	logger.Printf("targetURL: %#v\n", *tu)
 
-	runInAsync(path, *tu)
+	paths := tu.buildTargetPaths()
+	logger.Printf("Total paths count: %d\n", len(paths))
+
+	runInAsync(path, paths)
 }
 
 type execResult struct {
@@ -50,11 +53,7 @@ type execResult struct {
 	Out   string
 }
 
-func runInAsync(scriptPath string, target targetURL) {
-	paths := target.buildTargetPaths()
-
-	logger.Printf("Total paths count: %d\n", len(paths))
-
+func runInAsync(scriptPath string, paths []string) {
 	// send a signal to cancel goroutines which are internally invoked inside functions
 	done := make(chan interface{})
 	defer close(done)
