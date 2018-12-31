@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-		"os/exec"
+	"os/exec"
 	"path/filepath"
 	"runtime"
-		"sync"
+	"sync"
 	"time"
 )
 
