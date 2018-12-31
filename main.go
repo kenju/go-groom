@@ -6,8 +6,7 @@ import (
 		"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
-	"sync"
+		"sync"
 	"time"
 )
 
@@ -38,20 +37,12 @@ func main() {
 		fmt.Printf("error while getting absolute path for %s: %+v\n", path, err)
 	}
 
-	split := strings.Split(target, "/")
-	var tu targetURL
-	if len(split) == 1 {
-		tu = targetURL{split[0], "", ""}
-	} else if len(split) == 2 {
-		tu = targetURL{split[0], split[1], ""}
-	} else if len(split) == 3 {
-		tu = targetURL{split[0], split[1], split[2]}
-	}
+	tu := NewTargetURL(target)
 
 	logger.Printf("**DEBUG mode = true**\n")
-	logger.Printf("targetURL: %#v\n", tu)
+	logger.Printf("targetURL: %#v\n", *tu)
 
-	runInAsync(path, tu)
+	runInAsync(path, *tu)
 }
 
 type execResult struct {

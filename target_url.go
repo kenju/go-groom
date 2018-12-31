@@ -4,12 +4,26 @@ import (
 		"fmt"
 			"path/filepath"
 	"os"
+	"strings"
 )
 
 type targetURL struct {
 	host       string
 	user       string
 	repository string
+}
+
+func NewTargetURL(target string) *targetURL {
+	split := strings.Split(target, "/")
+	var tu *targetURL
+	if len(split) == 1 {
+		tu = &targetURL{split[0], "", ""}
+	} else if len(split) == 2 {
+		tu = &targetURL{split[0], split[1], ""}
+	} else if len(split) == 3 {
+		tu = &targetURL{split[0], split[1], split[2]}
+	}
+	return tu
 }
 
 func (tu *targetURL) buildTargetPaths() []string {
