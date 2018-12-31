@@ -3,8 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
-	"os/exec"
+		"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -34,13 +33,11 @@ func main() {
 
 	logger = NewLogger(debug)
 
-	// get abstract script path
 	path, err := filepath.Abs(scriptPath)
 	if err != nil {
 		fmt.Printf("error while getting absolute path for %s: %+v\n", path, err)
 	}
 
-	// build targetURL from flag
 	split := strings.Split(target, "/")
 	var tu targetURL
 	if len(split) == 1 {
@@ -57,83 +54,13 @@ func main() {
 	runInAsync(path, tu)
 }
 
-type targetURL struct {
-	host       string
-	user       string
-	repository string
-}
-
 type execResult struct {
 	Error error
 	Out   string
 }
 
-func buildHosts(target targetURL, dir string) []string {
-	var hosts []string
-	if len(target.host) > 0 {
-		hosts = []string{filepath.Join(dir, target.host)}
-	} else {
-		hosts = flattenWalk(dir)
-	}
-	return hosts
-}
-
-func buildUsers(target targetURL, host string) []string {
-	var users []string
-	if len(target.user) > 0 {
-		users = []string{filepath.Join(host, target.user)}
-	} else {
-		users = flattenWalk(host)
-	}
-	return users
-}
-
-func buildRepos(target targetURL, user string) []string {
-	var repos []string
-	if len(target.repository) > 0 {
-		repos = []string{filepath.Join(user, target.repository)}
-	} else {
-		repos = flattenWalk(user)
-	}
-	return repos
-}
-
-func flattenWalk(path string) []string {
-	matches, err := filepath.Glob(filepath.Join(path, "*"))
-	if err != nil {
-		fmt.Printf("error file globbing: %+v\n", err)
-	}
-	return matches
-}
-
-func buildTargetPaths(target targetURL) []string {
-	dir := filepath.Join(os.Getenv("GOPATH"), "src")
-	hosts := buildHosts(target, dir)
-
-	var paths []string
-	for _, host := range hosts { // ex. $GOPATH/src/github.com/
-		users := buildUsers(target, host)
-
-		for _, user := range users { // ex. $GOPATH/src/github.com/kenju
-			repos := buildRepos(target, user)
-
-			for _, repo := range repos { // ex. $GOPATH/src/github.com/kenju/go-groom
-				fi, err := os.Stat(repo)
-				if err != nil {
-					fmt.Printf("error while getting os stat for %+v\n", fi)
-				}
-				if fi.IsDir() {
-					paths = append(paths, repo)
-				}
-			}
-		}
-	}
-
-	return paths
-}
-
 func runInAsync(scriptPath string, target targetURL) {
-	paths := buildTargetPaths(target)
+	paths := target.buildTargetPaths()
 
 	logger.Printf("Total paths count: %d\n", len(paths))
 
