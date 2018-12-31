@@ -41,3 +41,15 @@ $ go-groom -script script.sh -target github.com/golang
 # single repository "github.com/golang/go"
 $ go-groom -script script.sh -target github.com/golang/go
 ```
+
+### `-concurrency (-c)`
+
+Specify the number of concurrency to execute.
+
+```sh
+# spin up 8 pipeline
+$ go-groom \
+    -script script.sh \
+    -target github.com \
+    -concurrency 8
+```

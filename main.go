@@ -13,6 +13,7 @@ import (
 )
 
 var debug bool
+var numConcurrency int
 
 func main() {
 	// read flag options
@@ -23,6 +24,9 @@ func main() {
 	// -target (-t)
 	flag.StringVar(&target, "target", "", "target URL to execute")
 	flag.StringVar(&target, "t", "", "target URL to execute")
+	// -concurrency (-c)
+	flag.IntVar(&numConcurrency, "concurrency", runtime.NumCPU(), "concurrency to execute")
+	flag.IntVar(&numConcurrency, "c", runtime.NumCPU(), "concurrency to execute")
 	// -debug
 	flag.BoolVar(&debug, "debug", false, "enable debug mode")
 	flag.Parse()
@@ -145,14 +149,13 @@ func runInAsync(scriptPath string, target targetURL) {
 	}
 
 	// spin up the number of pipelines to the number of available CPU on the machine
-	numPipelines := runtime.NumCPU()
 	if debug {
-		fmt.Printf("Spinning up %d pipeline\n", numPipelines)
+		fmt.Printf("Spinning up %d pipeline\n", numConcurrency)
 	}
 
-	pipelines := make([]<-chan interface{}, numPipelines)
+	pipelines := make([]<-chan interface{}, numConcurrency)
 	targetPathCh := stringArrToCh(done, paths)
-	for i := 0; i < numPipelines; i++ {
+	for i := 0; i < numConcurrency; i++ {
 		pipelines[i] = commandExecutor(done, targetPathCh, scriptPath)
 	}
 

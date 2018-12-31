@@ -18,6 +18,7 @@ run: build
 	./go-groom \
 		-script script.sh \
 		-target github.com/kenju \
+		-concurrency 2 \
 		-debug
 
 ## Setup
