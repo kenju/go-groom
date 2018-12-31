@@ -7,8 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync"
-	"time"
-)
+	)
 
 var logger *Logger
 var numConcurrency int
@@ -58,13 +57,10 @@ func runInAsync(scriptPath string, paths []string) {
 	done := make(chan interface{})
 	defer close(done)
 
-	// DEBUG: calculate execution time
-	var start time.Time
-	start = time.Now()
+	logger.startTimer()
 
 	// spin up the number of pipelines to the number of available CPU on the machine
 	logger.Printf("Spinning up %d pipeline\n", numConcurrency)
-
 	pipelines := make([]<-chan interface{}, numConcurrency)
 	targetPathCh := stringArrToCh(done, paths)
 	for i := 0; i < numConcurrency; i++ {
@@ -79,8 +75,7 @@ func runInAsync(scriptPath string, paths []string) {
 		fmt.Println(result.(execResult).Out)
 	}
 
-	// DEBUG: calculate execution time
-	logger.Printf("Execution took: %v\n", time.Since(start))
+	logger.endTimer()
 }
 
 // stage to take values from channels
