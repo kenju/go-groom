@@ -38,7 +38,7 @@ setup:
 
 ## Update dependencies
 update:
-	dep ensure -update
+	GO111MODULE=on go mod tidy
 
 ## Run tests
 test: setup
