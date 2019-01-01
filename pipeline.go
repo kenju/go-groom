@@ -4,6 +4,7 @@ import (
 	"os/exec"
 	"sync"
 	"fmt"
+	"context"
 )
 
 type execResult struct {
@@ -15,22 +16,22 @@ type execResult struct {
 
 func runInAsync(scriptPath string, paths []string, logger *Logger) {
 	// send a signal to cancel goroutines which are internally invoked inside functions
-	done := make(chan interface{})
-	defer close(done)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	logger.startTimer()
 
 	// spin up the number of pipelines to the number of available CPU on the machine
 	logger.Printf("Spinning up %d pipeline\n", numConcurrency)
 	executionPipeline := make([]<-chan interface{}, numConcurrency)
-	targetPathCh := stringArrToCh(done, paths)
+	targetPathCh := stringArrToCh(ctx, paths)
 	for i := 0; i < numConcurrency; i++ {
-		executionPipeline[i] = commandExecutor(done, targetPathCh, scriptPath)
+		executionPipeline[i] = commandExecutor(ctx, targetPathCh, scriptPath)
 	}
 
 	var numError int
 	// execute commands concurrently in each pipelines
-	pipelines := take(done, fanIn(done, executionPipeline...), len(paths))
+	pipelines := take(ctx, fanIn(ctx, executionPipeline...), len(paths))
 	for result := range pipelines {
 		fmt.Printf(result.(execResult).Dir + "\n")
 		if result.(execResult).Error != nil {
@@ -46,7 +47,7 @@ func runInAsync(scriptPath string, paths []string, logger *Logger) {
 
 // stage to take values from channels
 func take(
-	done <-chan interface{},
+	ctx context.Context,
 	valueCh <-chan interface{},
 	num int,
 ) <-chan interface{} {
@@ -57,7 +58,7 @@ func take(
 
 		for i := 0; i < num; i++ {
 			select {
-			case <-done:
+			case <-ctx.Done():
 				return
 			case takeCh <- <-valueCh:
 			}
@@ -69,7 +70,7 @@ func take(
 
 // stage to multiplex multiple channels
 func fanIn(
-	done <-chan interface{},
+	ctx context.Context,
 	channels ...<-chan interface{},
 ) <-chan interface{} {
 	var wg sync.WaitGroup
@@ -79,7 +80,7 @@ func fanIn(
 		defer wg.Done()
 		for i := range c {
 			select {
-			case <-done:
+			case <-ctx.Done():
 				return
 			case multiplexedCh <- i:
 			}
@@ -102,7 +103,7 @@ func fanIn(
 
 // stage for converting String array to channel
 func stringArrToCh(
-	done <-chan interface{},
+	ctx context.Context,
 	arr []string,
 ) <-chan string {
 	ch := make(chan string)
@@ -112,7 +113,7 @@ func stringArrToCh(
 
 		for _, v := range arr {
 			select {
-			case <-done:
+			case <-ctx.Done():
 				return
 			case ch <- v:
 			}
@@ -124,7 +125,7 @@ func stringArrToCh(
 
 // stage for executing command at target dir
 func commandExecutor(
-	done <-chan interface{},
+	ctx context.Context,
 	stringCh <-chan string,
 	scriptPath string,
 ) <-chan interface{} {
@@ -135,7 +136,7 @@ func commandExecutor(
 
 		for {
 			select {
-			case <-done:
+			case <-ctx.Done():
 				return
 			case resultCh <- execCommand(<-stringCh, scriptPath):
 			}
