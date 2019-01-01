@@ -5,6 +5,7 @@ import (
 	"sync"
 	"fmt"
 	"context"
+	"github.com/kenju/go-pipeline"
 )
 
 type execResult struct {
@@ -31,7 +32,7 @@ func runInAsync(scriptPath string, paths []string, logger *Logger) {
 
 	var numError int
 	// execute commands concurrently in each pipelines
-	pipelines := take(ctx, fanIn(ctx, executionPipeline...), len(paths))
+	pipelines := pipeline.Take(ctx, fanIn(ctx, executionPipeline...), len(paths))
 	for result := range pipelines {
 		fmt.Printf(result.(execResult).Dir + "\n")
 		if result.(execResult).Error != nil {
@@ -43,29 +44,6 @@ func runInAsync(scriptPath string, paths []string, logger *Logger) {
 
 	logger.endTimer()
 	logger.Printf("%d paths, %d error\n", len(paths), numError)
-}
-
-// stage to take values from channels
-func take(
-	ctx context.Context,
-	valueCh <-chan interface{},
-	num int,
-) <-chan interface{} {
-	takeCh := make(chan interface{})
-
-	go func() {
-		defer close(takeCh)
-
-		for i := 0; i < num; i++ {
-			select {
-			case <-ctx.Done():
-				return
-			case takeCh <- <-valueCh:
-			}
-		}
-	}()
-
-	return takeCh
 }
 
 // stage to multiplex multiple channels
