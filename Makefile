@@ -33,18 +33,16 @@ setup:
 	go get github.com/golang/lint/golint
 	go get golang.org/x/tools/cmd/goimports
 	go get github.com/Songmu/make2help/cmd/make2help
+	go get github.com/rakyll/gotest
 
-## Install dependencies
-deps:
-	echo "Not implemented yet"
 
 ## Update dependencies
 update:
-	echo "Not implemented yet"
+	dep ensure -update
 
 ## Run tests
 test: setup
-	if go test ./... -v; then \
+	if gotest ./... -v; then \
 		echo "$(OK_COLOR)$(OK_STRING) go test succeeded$(NO_COLOR)"; \
 	else \
 		echo "$(ERROR_COLOR)$(ERROR_STRING) go test failed$(NO_COLOR)n"; \
@@ -64,10 +62,6 @@ fmt: setup
 ## Build binaries
 build:
 	go build -ldflags "$(LDFLAGS)"
-
-## Update dependencies versions
-update-deps:
-	dep ensure -update
 
 ## Show help
 help:
