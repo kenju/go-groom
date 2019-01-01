@@ -3,11 +3,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:0a021738db257d58a2d02d762433624e46d383aa836ea8014ac822edcad4e254"
+  digest = "1:cd6f46da841276eb4d66a0e36c87acf8bf3c114bac6bcdc95ff8dbc4eb9c1898"
   name = "github.com/kenju/go-pipeline"
   packages = ["."]
   pruneopts = "UT"
-  revision = "3647fc92b3faa33b65caa958d06d22715a266880"
+  revision = "e37f1aef15091cc258169cba75ff739d3c81c14d"
 
 [solve-meta]
   analyzer-name = "dep"

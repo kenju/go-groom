@@ -25,7 +25,7 @@ func runInAsync(scriptPath string, paths []string, logger *Logger) {
 	// spin up the number of pipelines to the number of available CPU on the machine
 	logger.Printf("Spinning up %d pipeline\n", numConcurrency)
 	executionPipeline := make([]<-chan interface{}, numConcurrency)
-	targetPathCh := stringArrToCh(ctx, paths)
+	targetPathCh := pipeline.GeneratorString(ctx, paths...)
 	for i := 0; i < numConcurrency; i++ {
 		executionPipeline[i] = commandExecutor(ctx, targetPathCh, scriptPath)
 	}
@@ -77,28 +77,6 @@ func fanIn(
 	}()
 
 	return multiplexedCh
-}
-
-// stage for converting String array to channel
-func stringArrToCh(
-	ctx context.Context,
-	arr []string,
-) <-chan string {
-	ch := make(chan string)
-
-	go func() {
-		defer close(ch)
-
-		for _, v := range arr {
-			select {
-			case <-ctx.Done():
-				return
-			case ch <- v:
-			}
-		}
-	}()
-
-	return ch
 }
 
 // stage for executing command at target dir
