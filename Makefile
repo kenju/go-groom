@@ -15,7 +15,7 @@ WARN_STRING  = "[WARNING]"
 
 ## Build binaries and run in debug mode
 run-debug: build
-	./go-groom \
+	go run -race *.go \
 		-script script.sh \
 		-target github.com/kenju \
 		-concurrency 8 \
