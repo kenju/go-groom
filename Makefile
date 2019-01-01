@@ -65,6 +65,10 @@ fmt: setup
 build:
 	go build -ldflags "$(LDFLAGS)"
 
+## Update dependencies versions
+update-deps:
+	dep ensure -update
+
 ## Show help
 help:
 	@make2help $(MAKEFILE_LIST)

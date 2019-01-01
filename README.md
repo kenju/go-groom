@@ -61,3 +61,15 @@ $ go-groom \
 - Integrate profiling with pprof/trace into CI
 - use go generate for pipeline stage building with typed
 - introduce Go mod with version 1.11.x
+
+# Development
+
+## Update CHANGELOG.md
+
+```sh
+$ npm install -g auto-changelog
+$ git tag vx.x.x
+$ auto-changelog -t keepachangelog
+$ git commit -am "update CHANGELOG"
+$ git push
+```
