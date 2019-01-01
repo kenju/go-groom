@@ -2,7 +2,6 @@ package main
 
 import (
 	"os/exec"
-	"sync"
 	"fmt"
 	"context"
 	"github.com/kenju/go-pipeline"
@@ -32,7 +31,7 @@ func runInAsync(scriptPath string, paths []string, logger *Logger) {
 
 	var numError int
 	// execute commands concurrently in each pipelines
-	pipelines := pipeline.Take(ctx, fanIn(ctx, executionPipeline...), len(paths))
+	pipelines := pipeline.Take(ctx, pipeline.FanIn(ctx, executionPipeline...), len(paths))
 	for result := range pipelines {
 		fmt.Printf(result.(execResult).Dir + "\n")
 		if result.(execResult).Error != nil {
@@ -44,39 +43,6 @@ func runInAsync(scriptPath string, paths []string, logger *Logger) {
 
 	logger.endTimer()
 	logger.Printf("%d paths, %d error\n", len(paths), numError)
-}
-
-// stage to multiplex multiple channels
-func fanIn(
-	ctx context.Context,
-	channels ...<-chan interface{},
-) <-chan interface{} {
-	var wg sync.WaitGroup
-	multiplexedCh := make(chan interface{})
-
-	multiplex := func(c <-chan interface{}) {
-		defer wg.Done()
-		for i := range c {
-			select {
-			case <-ctx.Done():
-				return
-			case multiplexedCh <- i:
-			}
-		}
-	}
-
-	// select from all the channels
-	wg.Add(len(channels))
-	for _, c := range channels {
-		go multiplex(c)
-	}
-
-	go func() {
-		wg.Wait()
-		close(multiplexedCh)
-	}()
-
-	return multiplexedCh
 }
 
 // stage for executing command at target dir

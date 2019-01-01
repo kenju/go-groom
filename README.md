@@ -56,6 +56,7 @@ $ go-groom \
 
 # Milestones
 
+- Support inline-script option (instead of -scriptPath)
 - Support timeout (a.k.a. deadlines) for each execution
 - Integrate profiling with pprof/trace into CI
 - use go generate for pipeline stage building with typed
