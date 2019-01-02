@@ -19,7 +19,9 @@ func runInAsync(scriptPath string, paths []string, logger *Logger) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// start tracing
 	logger.startTimer()
+	logger.startTraceTask("runInAsync")
 
 	// spin up the number of pipelines to the number of available CPU on the machine
 	logger.Printf("Spinning up %d pipeline\n", numConcurrency)
@@ -41,8 +43,10 @@ func runInAsync(scriptPath string, paths []string, logger *Logger) {
 		fmt.Printf("\t" + result.(execResult).Out + "\n")
 	}
 
+	// finish tracing
 	logger.endTimer()
 	logger.Printf("%d paths, %d error\n", len(paths), numError)
+	logger.endTraceTask("runInAsync")
 }
 
 // stage for executing command at target dir
