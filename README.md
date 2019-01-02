@@ -64,12 +64,17 @@ $ go-groom \
 
 # Development
 
+Run below commands to show all available tasks.
+
+```
+make help
+```
+
 ## Update CHANGELOG.md
 
 ```sh
 $ npm install -g auto-changelog
 $ git tag vx.x.x
-$ auto-changelog -t keepachangelog
-$ git commit -am "update CHANGELOG"
+$ make changelog
 $ git push
 ```

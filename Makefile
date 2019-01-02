@@ -67,6 +67,11 @@ build:
 view-trace:
 	go tool trace trace.out
 
+## Update CHANGELOG.md
+changelog:
+	auto-changelog -t keepachangelog
+	git commit -am "update CHANGELOG"
+
 ## Show help
 help:
 	@make2help $(MAKEFILE_LIST)
