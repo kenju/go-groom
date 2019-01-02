@@ -11,7 +11,9 @@ const (
 	traceFile = "trace.out"
 )
 
-// Logger handles logging and tracking with timer
+// Tracer track application performance with runtime/trace package.
+// Call `(t *Tracer) startTraceTask()` to start tracing.
+// Be sure to call `(t *Tracer) endTraceTask()` to finish tracing by releasing resources (e.g. file descriptor)
 type Tracer struct {
 	logger *Logger
 	// fields for tracing
@@ -20,7 +22,7 @@ type Tracer struct {
 	traceFile    *os.File
 }
 
-// NewLogger returns a new instance of Logger pointer
+// NewTracer returns a new instance of Tracer pointer
 func NewTracer(logger *Logger) (*Tracer) {
 	return &Tracer{
 		logger:       logger,
