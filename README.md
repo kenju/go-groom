@@ -58,9 +58,7 @@ $ go-groom \
 
 - Support inline-script option (instead of -scriptPath)
 - Support timeout (a.k.a. deadlines) for each execution
-- Integrate profiling with pprof/trace into CI
 - use go generate for pipeline stage building with typed
-- introduce Go mod with version 1.11.x
 
 # Development
 
