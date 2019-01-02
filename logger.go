@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"time"
-				)
+)
 
 // Logger handles logging and tracking with timer
 type Logger struct {
@@ -14,8 +14,8 @@ type Logger struct {
 // NewLogger returns a new instance of Logger pointer
 func NewLogger(isDebug bool) (*Logger) {
 	return &Logger{
-		isDebug:      isDebug,
-		startedTime:  time.Now(),
+		isDebug:     isDebug,
+		startedTime: time.Now(),
 	}
 }
 
