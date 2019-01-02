@@ -31,6 +31,8 @@ func runInAsync(scriptPath string, paths []string, logger *Logger) {
 		executionPipeline[i] = commandExecutor(ctx, targetPathCh, scriptPath)
 	}
 
+	tracer.traceLog("pipeline", "finish spinning up")
+
 	var numError int
 	// execute commands concurrently in each pipelines
 	pipelines := pipeline.Take(ctx, pipeline.FanIn(ctx, executionPipeline...), len(paths))
@@ -41,6 +43,8 @@ func runInAsync(scriptPath string, paths []string, logger *Logger) {
 			fmt.Printf("\tError: %v\n", result.(execResult).Error)
 		}
 		fmt.Printf("\t" + result.(execResult).Out + "\n")
+
+		tracer.traceLog("pipeline", fmt.Sprintf("finish pipeline for %s", result.(execResult).Dir))
 	}
 
 	logger.endTimer()
