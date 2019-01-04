@@ -25,7 +25,8 @@ setup:
 	go get golang.org/x/tools/cmd/goimports
 	go get github.com/Songmu/make2help/cmd/make2help
 	go get github.com/rakyll/gotest
-	GO111MODULE=on go mod download
+	# package dependencies
+	go get github.com/kenju/go-pipeline
 
 ## Update dependencies
 update:
