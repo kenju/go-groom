@@ -35,7 +35,7 @@ func runInAsync(scriptPath string, paths []string, logger *Logger) {
 
 	var numError int
 	// execute commands concurrently in each pipelines
-	pipelines := pipeline.Take(ctx, pipeline.FanIn(ctx, executionPipeline...), len(paths))
+	pipelines := pipeline.TakeInterface(ctx, pipeline.FanInInterface(ctx, executionPipeline...), len(paths))
 	for result := range pipelines {
 		fmt.Printf(result.(execResult).Dir + "\n")
 		if result.(execResult).Error != nil {

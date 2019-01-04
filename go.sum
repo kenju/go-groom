@@ -1,6 +1,4 @@
 github.com/cheekybits/genny v1.0.0 h1:uGGa4nei+j20rOSeDeP5Of12XVm7TGUd4dJA9RDitfE=
 github.com/cheekybits/genny v1.0.0/go.mod h1:+tQajlRqAUrPI7DOSpB0XAqZYtQakVtB7wXkRAgjxjQ=
-github.com/kenju/go-pipeline v0.0.2 h1:rT2n1Pro9R48EVVrzuAnyKfBTWp1E2W5NLGeewIV4N8=
-github.com/kenju/go-pipeline v0.0.2/go.mod h1:LInw8Kvyhij+Rivjhy/zCCjMGIp9Rp7JgH5kgkcj2os=
-github.com/kenju/go-pipeline v0.1.2 h1:t+n/zB7eZ5PCc7jUbVDe5QztnIyoczv/OPkzso4m6OU=
-github.com/kenju/go-pipeline v0.1.2/go.mod h1:LInw8Kvyhij+Rivjhy/zCCjMGIp9Rp7JgH5kgkcj2os=
+github.com/kenju/go-pipeline v0.2.0 h1:cXetxzVKoGpjHF355v16tJxlzFG9hilB5ZsUyJ36V8A=
+github.com/kenju/go-pipeline v0.2.0/go.mod h1:LInw8Kvyhij+Rivjhy/zCCjMGIp9Rp7JgH5kgkcj2os=
