@@ -4,15 +4,6 @@ REVISION := $(shell git rev-parse --short HEAD)
 LDFLAGS := -X 'main.version=$(VERSION)' \
 	-X 'main.revision=$(REVISION)'
 
-OK_COLOR    = \033[0;32m
-ERROR_COLOR = \033[0;31m
-WARN_COLOR  = \033[0;33m
-NO_COLOR    = \033[m
-
-OK_STRING    = "[OK]"
-ERROR_STRING = "[ERROR]"
-WARN_STRING  = "[WARNING]"
-
 ## Build binaries and run in debug mode
 run-debug: build
 	go run -race *.go \
@@ -38,15 +29,11 @@ setup:
 
 ## Update dependencies
 update:
-	GO111MODULE=on go mod tidy
+	GO111MODULE=on go get github.com/kenju/go-pipeline
 
 ## Run tests
 test: setup
-	if gotest ./... -v; then \
-		echo "$(OK_COLOR)$(OK_STRING) go test succeeded$(NO_COLOR)"; \
-	else \
-		echo "$(ERROR_COLOR)$(ERROR_STRING) go test failed$(NO_COLOR)n"; \
-	fi
+	gotest ./... -v -parallel=4
 
 ## Lint
 lint:
