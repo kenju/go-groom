@@ -58,7 +58,6 @@ $ go-groom \
 
 - Support inline-script option (instead of -scriptPath)
 - Support timeout (a.k.a. deadlines) for each execution
-- use go generate for pipeline stage building with typed
 
 # Development
 
